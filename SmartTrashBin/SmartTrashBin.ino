@@ -14,8 +14,8 @@ StaticJsonDocument<200> doc;
 
 // #define ssid "178 HOANGDIEU - T4B"
 // #define pass "68686868"
-#define ssid "Le Van Khanh"
-#define pass "levankhanh123"
+#define ssid "uda dep"
+#define pass "123456"
 #define apiSend "http://192.168.1.10:8000/api/trash/1/"
 #define apiGet "http://192.168.1.10:8000/api/trashtype/1/"
 

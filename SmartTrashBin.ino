@@ -12,10 +12,12 @@ StaticJsonDocument<200> doc;
 #define trigPinInOrganic 27
 #define echoPinInOrganic 26
 
-#define ssid "178 HOANGDIEU - T4B"
-#define pass "68686868"
-#define apiSend "http://192.168.14.105:8000/api/trash/1/"
-#define apiGet "http://192.168.14.105:8000/api/trashtype/1/"
+// #define ssid "178 HOANGDIEU - T4B"
+// #define pass "68686868"
+#define ssid "Le Van Khanh"
+#define pass "levankhanh123"
+#define apiSend "http://192.168.1.10:8000/api/trash/1/"
+#define apiGet "http://192.168.1.10:8000/api/trashtype/1/"
 
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -99,34 +101,6 @@ void sendPUTRequest(int organic, int inOrganic) {
   }
 }
 
-void getData() {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(apiGet);
-
-    unsigned httpResponseCode = http.GET();
-
-    if (httpResponseCode > 0) {
-      Serial.println("-------START GET-------");
-      data = http.getString();
-      Serial.println("GET data: " + data);
-      DeserializationError error = deserializeJson(doc, data);
-      trashType = doc["name"].as<const char*>();
-      Serial.println("-------END GET-------");
-      Serial.println();
-      Serial.println();
-    } else {
-      Serial.println("Error in GET data");
-      Serial.println();
-    }
-    delay(500);
-    http.end();
-  } else {
-    Serial.println("WiFi Disconnected");
-    Serial.println();
-  }
-}
-
 int readDistance() {
   digitalWrite(trigPinDistance, LOW);
   delayMicroseconds(100);
@@ -164,14 +138,15 @@ void loop() {
   int distance = readDistance();
   Serial.println(distance);
 
-  int organic = 100 - readOrganic();
-  int inOrganic = 100 - readInOrganic();
+  int organic = 40 - readOrganic();
+  int inOrganic = 40 - readInOrganic();
 
   if (distance < 20) {
     Serial.println("OPEN LID");
     Serial.println();
 
     myServo1.write(0);
+    digitalWrite(led, LOW);
 
     sendPUTRequest(organic, inOrganic);   //PUT trash amount data to server
     getData();  //GET trash type data from server
@@ -188,6 +163,9 @@ void loop() {
   }
   if (trashType == "inOrganic") {
     myServo2.write(180);
+  }
+  if (trashType == "") {
+    myServo2.write(90);
   }
 
   Serial.print("Organic trash: ");

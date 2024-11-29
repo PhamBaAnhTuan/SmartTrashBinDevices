@@ -4,14 +4,6 @@ StaticJsonDocument<200> doc;
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-#include <HC_SR04.h>
-#define trigPinDistance 19
-#define echoPinDistance 18
-#define trigPinOrganic 17
-#define echoPinOrganic 16
-#define trigPinInOrganic 27
-#define echoPinInOrganic 26
-
 // #define ssid "178 HOANGDIEU - T4B"
 // #define pass "68686868"
 #define ssid "Le Van Khanh"
@@ -22,12 +14,6 @@ StaticJsonDocument<200> doc;
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-#include <ESP32_Servo.h>
-Servo myServo1;
-Servo myServo2;
-
-int servoPin1 = 4;
-int servoPin2 = 2;
 int led = 15;
 
 String data;
@@ -59,8 +45,6 @@ void setup() {
   pinMode(echoPinInOrganic, INPUT);
 
   pinMode(led, OUTPUT);
-  myServo1.attach(servoPin1);
-  myServo2.attach(servoPin2);
 
   lcd.init();
   lcd.display();
@@ -101,35 +85,35 @@ void sendPUTRequest(int organic, int inOrganic) {
   }
 }
 
-int readDistance() {
-  digitalWrite(trigPinDistance, LOW);
-  delayMicroseconds(100);
-  digitalWrite(trigPinDistance, HIGH);
-  delayMicroseconds(100);
-  digitalWrite(trigPinDistance, LOW);
-  long duration1 = pulseIn(echoPinDistance, HIGH);
-  return duration1 / 2 * 0.034;
+void getData() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(apiGet);
+
+    unsigned httpResponseCode = http.GET();
+
+    if (httpResponseCode > 0) {
+      Serial.println("-------START GET-------");
+      data = http.getString();
+      Serial.println("GET data: " + data);
+      DeserializationError error = deserializeJson(doc, data);
+      trashType = doc["name"].as<const char*>();
+      Serial.println("-------END GET-------");
+      Serial.println();
+      Serial.println();
+    } else {
+      Serial.println("Error in GET data");
+      Serial.println();
+    }
+    delay(500);
+    http.end();
+  } else {
+    Serial.println("WiFi Disconnected");
+    Serial.println();
+  }
 }
 
-int readOrganic() {
-  digitalWrite(trigPinOrganic, LOW);
-  delayMicroseconds(100);
-  digitalWrite(trigPinOrganic, HIGH);
-  delayMicroseconds(100);
-  digitalWrite(trigPinOrganic, LOW);
-  long duration2 = pulseIn(echoPinOrganic, HIGH);
-  return duration2 / 2 * 0.034;
-}
 
-int readInOrganic() {
-  digitalWrite(trigPinInOrganic, LOW);
-  delayMicroseconds(100);
-  digitalWrite(trigPinInOrganic, HIGH);
-  delayMicroseconds(100);
-  digitalWrite(trigPinInOrganic, LOW);
-  long duration3 = pulseIn(echoPinInOrganic, HIGH);
-  return duration3 / 2 * 0.034;
-}
 
 
 void loop() {
